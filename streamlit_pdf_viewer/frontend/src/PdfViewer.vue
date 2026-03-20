@@ -81,6 +81,7 @@ export default {
     const pdfContainer = ref(null);
     const manualZoomInput = ref(100);
     const isRendering = ref(false);
+    const wasVisible = ref(false);
 
     const renderText = props.args.render_text === true;
     const allowClickableAnnotationsWithTextRendering = props.args.allow_clickable_annotations_with_text_rendering === true;
@@ -464,15 +465,29 @@ export default {
 
     const debouncedHandleResize = debounce(handleResize, 200);
 
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[0];
+      if (entry.isIntersecting && !wasVisible.value) {
+        wasVisible.value = true;
+        debouncedHandleResize();
+      } else if (!entry.isIntersecting) {
+        wasVisible.value = false;
+      }
+    });
+
     onMounted(() => {
       debouncedHandleResize();
       window.addEventListener("resize", debouncedHandleResize);
       document.addEventListener('click', handleClickOutside);
+      if (pdfContainer.value) {
+        observer.observe(pdfContainer.value);
+      }
     });
 
     onUnmounted(() => {
       window.removeEventListener("resize", debouncedHandleResize);
       document.removeEventListener('click', handleClickOutside);
+      observer.disconnect();
     });
 
     return {
