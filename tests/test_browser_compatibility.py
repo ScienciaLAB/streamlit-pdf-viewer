@@ -27,9 +27,6 @@ def test_basic_pdf_viewer_compatibility(page: Page):
 @pytest.mark.compatibility
 def test_pdf_viewer_renders_correctly(page: Page):
     """Test that PDF viewer renders correctly across browsers."""
-    # Wait for content to load
-    page.wait_for_timeout(3000)
-    
     # Check that the PDF viewer is present
     iframe_components = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]')
     expect(iframe_components).to_have_count(1)

@@ -26,10 +26,9 @@ def go_to_app(page: Page, streamlit_app: StreamlitRunner):
     """
     page.goto(streamlit_app.server_url)
     # Wait for app to load
-    page.get_by_role("img", name="Running...").is_hidden()
+    expect(page.get_by_role("img", name="Running...")).not_to_be_visible()
 
 
-@pytest.mark.skip(reason="I give up. This test cannot run consistently in CI")
 def test_should_render_template_check_container_size(page: Page):
     expect(page.get_by_text("Test PDF Viewer with the PDF in a tab")).to_be_visible()
 
@@ -89,9 +88,7 @@ def test_should_render_template_check_container_size(page: Page):
 
     b_box_1 = pdf_container_1.bounding_box()
     assert 299 <= b_box_1['height'] <= 301
-    # The second part of the If tests that the width < height, which indicate that we have resized
-    # the PDF to keep the proportions
-    assert round(b_box_1['width']) <= iframe_box['width'] and round(b_box_1['height']) <= round(b_box_1['height'])
+    assert round(b_box_1['width']) <= iframe_box['width']
 
     pdf_viewer_1 = iframe_frame_1.locator('div[id="pdfViewer"]')
     expect(pdf_viewer_1).to_be_visible()

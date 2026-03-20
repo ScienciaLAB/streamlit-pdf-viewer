@@ -83,11 +83,9 @@ def test_accessibility_high_contrast_mode(page: Page):
         }
     """)
     
-    page.wait_for_timeout(1000)
-    
     iframe_components = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]')
     expect(iframe_components).to_have_count(1)
-    
+
     # Check that the viewer is still visible and functional in high contrast
     iframe_frame = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
     pdf_viewer = iframe_frame.locator('div[id="pdfViewer"]')
@@ -109,8 +107,8 @@ def test_accessibility_responsive_text_sizing(page: Page):
     
     for viewport in viewports:
         page.set_viewport_size(viewport)
-        page.wait_for_timeout(1000)
-        
+        page.wait_for_timeout(500)
+
         iframe_components = page.locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]')
         expect(iframe_components).to_have_count(1)
         

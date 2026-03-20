@@ -25,7 +25,7 @@ def go_to_app(page: Page, streamlit_app: StreamlitRunner):
     """
     page.goto(streamlit_app.server_url)
     # Wait for app to load
-    page.get_by_role("img", name="Running...").is_hidden()
+    expect(page.get_by_role("img", name="Running...")).not_to_be_visible()
 
 
 def test_should_render_template_check_container_size(page: Page):
@@ -54,8 +54,6 @@ def test_should_render_template_check_container_size(page: Page):
     pdf_viewer.wait_for(timeout=5000, state='visible')
     expect(pdf_viewer).to_be_visible()
 
-    # Wait for canvases to render
-    page.wait_for_timeout(500)
     canvas_locator = pdf_viewer.locator("canvas")
     canvas_list = wait_for_canvases(canvas_locator)
 

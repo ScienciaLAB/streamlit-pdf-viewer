@@ -144,8 +144,8 @@ def test_edge_case_viewport_resize(page: Page):
     
     for viewport in viewports:
         page.set_viewport_size(viewport)
-        page.wait_for_timeout(1000)
-        
+        page.wait_for_timeout(500)
+
         # Check that all viewers remain functional
         for i in range(1):
             iframe_frame = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(i)

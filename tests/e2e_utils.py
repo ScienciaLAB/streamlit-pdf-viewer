@@ -160,7 +160,7 @@ class StreamlitRunner:
                     if response.text == "ok":
                         return True
                 time.sleep(3)
-                if time.time() - start_time > 60 * timeout:
+                if time.time() - start_time > timeout:
                     return False
 
     @property
