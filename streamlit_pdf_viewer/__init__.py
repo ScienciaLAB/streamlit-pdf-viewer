@@ -38,6 +38,7 @@ def pdf_viewer(
         show_page_separator: bool = True,
         scroll_to_page: Optional[int] = None,
         scroll_to_annotation: Optional[int] = None,
+        scroll_behavior: str = "smooth",
         on_annotation_click: Optional[Callable[[dict], None]] = None,
         allow_clickable_annotations_with_text_rendering: bool = False,
 ):
@@ -59,6 +60,7 @@ def pdf_viewer(
     :param show_page_separator: Whether to show a separator between pages. Defaults to True.
     :param scroll_to_page: Scroll to a specific page in the PDF. The parameter is an integer, which represent the positional value of the page. E.g. 1, will be the first page. Defaults to None.
     :param scroll_to_annotation: Scroll to a specific annotation in the PDF. The parameter is an integer, which represent the positional value of the annotation. E.g. 1, will be the first annotation. Defaults to None.
+    :param scroll_behavior: The scrolling behavior when navigating to a page or annotation. Can be "smooth" (animated scroll) or "instant" (immediate jump). Defaults to "smooth".
     :param on_annotation_click: A callback function that will be called when an annotation is clicked. The function should accept a single argument, which is the annotation that was clicked. Defaults to None.
     :param allow_clickable_annotations_with_text_rendering: When True, annotations remain clickable even when render_text is enabled. Note that text selection will not work through annotation areas. Defaults to False.
 
@@ -94,6 +96,9 @@ def pdf_viewer(
 
     if viewer_align not in ["center", "left", "right"]:
         raise ValueError("viewer_align must be one of 'center', 'left', or 'right'")
+
+    if scroll_behavior not in ["smooth", "instant"]:
+        raise ValueError("scroll_behavior must be one of 'smooth' or 'instant'")
 
     if scroll_to_page is not None:
         if scroll_to_annotation is not None:
@@ -135,6 +140,7 @@ def pdf_viewer(
         show_page_separator=show_page_separator,
         scroll_to_page=scroll_to_page,
         scroll_to_annotation=scroll_to_annotation,
+        scroll_behavior=scroll_behavior,
         allow_clickable_annotations_with_text_rendering=allow_clickable_annotations_with_text_rendering
     )
 
