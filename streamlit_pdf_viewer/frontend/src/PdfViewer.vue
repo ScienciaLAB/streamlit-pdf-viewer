@@ -81,7 +81,6 @@ export default {
     const pdfContainer = ref(null);
     const manualZoomInput = ref(100);
     const isRendering = ref(false);
-    const wasVisible = ref(false);
 
     const renderText = props.args.render_text === true;
     const allowClickableAnnotationsWithTextRendering = props.args.allow_clickable_annotations_with_text_rendering === true;
@@ -382,6 +381,8 @@ export default {
 
     const handleResize = async () => {
       if (isRendering.value) return;
+      // Skip render if container is hidden (e.g., inactive Streamlit tab)
+      if (pdfContainer.value && pdfContainer.value.clientWidth === 0) return;
       isRendering.value = true;
       try {
         const binaryDataUrl = `data:application/pdf;base64,${props.args.binary}`;
@@ -465,14 +466,14 @@ export default {
 
     const debouncedHandleResize = debounce(handleResize, 200);
 
-    const observer = new IntersectionObserver((entries) => {
+    let lastContainerWidth = 0;
+    const resizeObserver = new ResizeObserver((entries) => {
       const entry = entries[0];
-      if (entry.isIntersecting && !wasVisible.value) {
-        wasVisible.value = true;
+      const newWidth = entry.contentRect.width;
+      if (lastContainerWidth === 0 && newWidth > 0) {
         debouncedHandleResize();
-      } else if (!entry.isIntersecting) {
-        wasVisible.value = false;
       }
+      lastContainerWidth = newWidth;
     });
 
     onMounted(() => {
@@ -480,14 +481,14 @@ export default {
       window.addEventListener("resize", debouncedHandleResize);
       document.addEventListener('click', handleClickOutside);
       if (pdfContainer.value) {
-        observer.observe(pdfContainer.value);
+        resizeObserver.observe(pdfContainer.value);
       }
     });
 
     onUnmounted(() => {
       window.removeEventListener("resize", debouncedHandleResize);
       document.removeEventListener('click', handleClickOutside);
-      observer.disconnect();
+      resizeObserver.disconnect();
     });
 
     return {
