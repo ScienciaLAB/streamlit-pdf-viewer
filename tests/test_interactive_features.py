@@ -14,7 +14,16 @@ def test_zoom_controls_visibility(page: Page):
     # Test the first viewer (with zoom controls)
     iframe_frame = page.frame_locator('iframe[title="streamlit_pdf_viewer.streamlit_pdf_viewer"]').nth(0)
 
-    # Check for zoom controls
-    zoom_controls = iframe_frame.locator('button.zoom-button, .zoom-controls, [class*="zoom"]')
-    # Note: The exact selector depends on your frontend implementation
-    # This is a flexible approach that looks for common zoom control patterns
+    # Check zoom button is visible
+    zoom_button = iframe_frame.locator('button.zoom-button')
+    expect(zoom_button).to_be_visible()
+
+    # Click to open zoom panel and verify controls
+    zoom_button.click()
+    zoom_panel = iframe_frame.locator('div.zoom-panel')
+    expect(zoom_panel).to_be_visible()
+
+    zoom_in_button = iframe_frame.locator('button').filter(has_text="Zoom In")
+    zoom_out_button = iframe_frame.locator('button').filter(has_text="Zoom Out")
+    expect(zoom_in_button).to_be_visible()
+    expect(zoom_out_button).to_be_visible()

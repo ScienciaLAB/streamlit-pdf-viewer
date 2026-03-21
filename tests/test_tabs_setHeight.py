@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from playwright.sync_api import Page, expect
 
-from tests import ROOT_DIRECTORY, wait_for_canvases
+from tests import ROOT_DIRECTORY
 from tests.e2e_utils import StreamlitRunner
 
 BASIC_EXAMPLE_FILE = os.path.join(ROOT_DIRECTORY, "tests", "streamlit_apps", "example_tab_setHeight.py")

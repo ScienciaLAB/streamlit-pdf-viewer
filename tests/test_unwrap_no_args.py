@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from playwright.sync_api import Page, expect
 
-from tests import ROOT_DIRECTORY, wait_for_canvases
+from tests import ROOT_DIRECTORY
 from tests.e2e_utils import StreamlitRunner
 
 BASIC_EXAMPLE_FILE = os.path.join(ROOT_DIRECTORY, "tests", "streamlit_apps", "example_unwrap_no_args.py")
@@ -49,10 +49,8 @@ def test_should_render_template_check_container_size(page: Page):
     expect(pdf_viewer).to_be_visible()
 
     canvas_locator = pdf_viewer.locator("canvas")
-    canvas_list = wait_for_canvases(canvas_locator)
-    assert len(canvas_list) == 8
-    for canvas in canvas_list:
-        canvas.wait_for(timeout=5000, state='visible')
+    expect(canvas_locator).to_have_count(8)
+    for canvas in canvas_locator.all():
         expect(canvas).to_be_visible()
 
     annotations_locator = page.locator('div[id="pdfAnnotations"]').nth(0)
@@ -68,14 +66,10 @@ def test_should_render_multiple_pages(page: Page):
     pdf_viewer.wait_for(timeout=5000, state='visible')
 
     canvas_locator = pdf_viewer.locator("canvas")
-    canvas_list = wait_for_canvases(canvas_locator)
-
-    # Should have 8 pages total for the test PDF
-    assert len(canvas_list) == 8
+    expect(canvas_locator).to_have_count(8)
 
     # All canvases should be visible
-    for i, canvas in enumerate(canvas_list):
-        canvas.wait_for(timeout=5000, state='visible')
+    for i, canvas in enumerate(canvas_locator.all()):
         expect(canvas).to_be_visible()
         # Each canvas should have reasonable dimensions
         canvas_box = canvas.bounding_box()
