@@ -381,6 +381,8 @@ export default {
 
     const handleResize = async () => {
       if (isRendering.value) return;
+      // Skip render if container is hidden (e.g., inactive Streamlit tab)
+      if (pdfContainer.value && pdfContainer.value.clientWidth === 0) return;
       isRendering.value = true;
       try {
         const binaryDataUrl = `data:application/pdf;base64,${props.args.binary}`;
@@ -464,15 +466,29 @@ export default {
 
     const debouncedHandleResize = debounce(handleResize, 200);
 
+    let lastContainerWidth = 0;
+    const resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      const newWidth = entry.contentRect.width;
+      if (lastContainerWidth === 0 && newWidth > 0) {
+        debouncedHandleResize();
+      }
+      lastContainerWidth = newWidth;
+    });
+
     onMounted(() => {
       debouncedHandleResize();
       window.addEventListener("resize", debouncedHandleResize);
       document.addEventListener('click', handleClickOutside);
+      if (pdfContainer.value) {
+        resizeObserver.observe(pdfContainer.value);
+      }
     });
 
     onUnmounted(() => {
       window.removeEventListener("resize", debouncedHandleResize);
       document.removeEventListener('click', handleClickOutside);
+      resizeObserver.disconnect();
     });
 
     return {
