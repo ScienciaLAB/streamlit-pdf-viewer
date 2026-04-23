@@ -59,7 +59,7 @@ def pdf_viewer(
     :param viewer_align: The alignment of the PDF viewer in the container. Can be "center", "left", or "right". Defaults to "center".
     :param show_page_separator: Whether to show a separator between pages. Defaults to True.
     :param scroll_to_page: Scroll to a specific page in the PDF. The parameter is an integer, which represent the positional value of the page. E.g. 1, will be the first page. Defaults to None.
-    :param scroll_to_annotation: Scroll to a specific annotation in the PDF. The parameter is an integer, which represent the positional value of the annotation. E.g. 1, will be the first annotation. Defaults to None.
+    :param scroll_to_annotation: Scroll to a specific annotation in the PDF. The parameter is a 1-based positional integer referring to the order of the annotation in the `annotations` list, independent of any `id` field on the annotation itself. E.g. 1 scrolls to the first annotation. Values below 1 are silently coerced to None. Defaults to None.
     :param scroll_behavior: The scrolling behavior when navigating to a page or annotation. Can be "smooth" (animated scroll) or "instant" (immediate jump). Defaults to "smooth".
     :param on_annotation_click: A callback function that will be called when an annotation is clicked. The function should accept a single argument, which is the annotation that was clicked. Defaults to None.
     :param allow_clickable_annotations_with_text_rendering: When True, annotations remain clickable even when render_text is enabled. Note that text selection will not work through annotation areas. Defaults to False.
