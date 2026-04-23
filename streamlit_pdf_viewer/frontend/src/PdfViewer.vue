@@ -382,23 +382,122 @@ export default {
       }
     };
 
+    // Scroll preservation across Streamlit reruns (issue #107). Streamlit >= 1.41
+    // can re-mount the component iframe on every rerun; combined with the
+    // ResizeObserver below that means a full PDF re-render, which wipes the user's
+    // scroll position. We fingerprint the render-relevant inputs to skip
+    // redundant re-renders, and capture/restore scrollTop across the ones we can't
+    // avoid (using sessionStorage to survive full remounts).
+    const lastRenderFingerprint = ref(null);
+    const SCROLL_STORAGE_PREFIX = 'streamlit-pdf-viewer-scroll:';
+
+    const computeFingerprint = () => JSON.stringify({
+      bl: props.args.binary?.length || 0,
+      bh: (props.args.binary || '').slice(0, 64),
+      bt: (props.args.binary || '').slice(-64),
+      z: localZoomLevel.value,
+      a: props.args.viewer_align,
+      w: props.args.width,
+      h: props.args.height,
+      sep: props.args.show_page_separator,
+      rt: props.args.render_text,
+      rb: props.args.resolution_boost,
+      ann: JSON.stringify(props.args.annotations || []),
+      ptr: JSON.stringify(props.args.pages_to_render || []),
+      pvs: props.args.pages_vertical_spacing,
+      aos: props.args.annotation_outline_size,
+      acwr: props.args.allow_clickable_annotations_with_text_rendering,
+    });
+
+    const getScroller = () => pdfContainer.value?.querySelector('.scrolling-container') || null;
+
+    const captureScrollState = () => {
+      const s = getScroller();
+      if (!s) return null;
+      return {
+        top: s.scrollTop,
+        height: s.scrollHeight,
+        ratio: s.scrollHeight > 0 ? s.scrollTop / s.scrollHeight : 0,
+      };
+    };
+
+    const restoreScrollState = (saved) => {
+      if (!saved || saved.top <= 0) return;
+      const s = getScroller();
+      if (!s) return;
+      requestAnimationFrame(() => {
+        if (saved.height > 0 && Math.abs(s.scrollHeight - saved.height) >= 10) {
+          // Layout changed (e.g. zoom) — map by ratio to preserve logical position.
+          s.scrollTop = Math.round(s.scrollHeight * saved.ratio);
+        } else {
+          s.scrollTop = saved.top;
+        }
+      });
+    };
+
+    const scrollStorageKey = () => {
+      const b = props.args.binary || '';
+      return `${SCROLL_STORAGE_PREFIX}${b.length}:${b.slice(0, 64)}`;
+    };
+
+    const persistScrollToSession = () => {
+      try {
+        const s = getScroller();
+        if (!s || s.scrollTop <= 0) return;
+        sessionStorage.setItem(scrollStorageKey(), String(s.scrollTop));
+      } catch (e) { /* sandboxed storage may be unavailable */ }
+    };
+
+    const readScrollFromSession = () => {
+      try {
+        const raw = sessionStorage.getItem(scrollStorageKey());
+        const n = raw ? parseInt(raw, 10) : 0;
+        return isNaN(n) ? 0 : n;
+      } catch (e) {
+        return 0;
+      }
+    };
+
     const handleResize = async () => {
       if (isRendering.value) return;
       // Skip render if container is hidden (e.g., inactive Streamlit tab)
       if (pdfContainer.value && pdfContainer.value.clientWidth === 0) return;
+
+      const fingerprint = computeFingerprint();
+      if (fingerprint === lastRenderFingerprint.value) {
+        // Rerun didn't change render inputs — keep canvases, just reapply geometry
+        // and any new scroll directive.
+        setFrameWidth();
+        setFrameHeight();
+        scrollToItem();
+        return;
+      }
+
       isRendering.value = true;
+      const domScroll = captureScrollState();
+      const sessionScrollTop = readScrollFromSession();
+      const preservedScroll = (domScroll && domScroll.top > 0)
+        ? domScroll
+        : { top: sessionScrollTop, height: 0, ratio: 0 };
+
       try {
         const binaryDataUrl = `data:application/pdf;base64,${props.args.binary}`;
         setFrameWidth();
         await loadPdfs(binaryDataUrl);
         setFrameHeight();
+        lastRenderFingerprint.value = fingerprint;
 
+        if (!props.args.scroll_to_page && !props.args.scroll_to_annotation) {
+          restoreScrollState(preservedScroll);
+        }
       } catch (error) {
         console.error(error);
       } finally {
         isRendering.value = false;
       }
     };
+
+    const debouncedPersistScroll = debounce(persistScrollToSession, 150);
 
     watch(() => props.args.binary, () => {
       handleResize();
@@ -486,12 +585,21 @@ export default {
       if (pdfContainer.value) {
         resizeObserver.observe(pdfContainer.value);
       }
+      const scroller = getScroller();
+      if (scroller) {
+        scroller.addEventListener('scroll', debouncedPersistScroll, { passive: true });
+      }
     });
 
     onUnmounted(() => {
+      persistScrollToSession();
       window.removeEventListener("resize", debouncedHandleResize);
       document.removeEventListener('click', handleClickOutside);
       resizeObserver.disconnect();
+      const scroller = getScroller();
+      if (scroller) {
+        scroller.removeEventListener('scroll', debouncedPersistScroll);
+      }
     });
 
     return {
