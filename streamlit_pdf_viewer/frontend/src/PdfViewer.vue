@@ -149,6 +149,8 @@ export default {
       annotation.id = `${annotation.id || annotationIndex}`
       annotationDiv.id = `annotation-${annotation.id}`;
       annotationDiv.setAttribute("data-index", annotation.id);
+      // 0-based positional index, independent of user-supplied annotation.id. Used by scroll_to_annotation.
+      annotationDiv.setAttribute("data-position", annotationIndex);
       annotationDiv.style.position = 'absolute';
       annotationDiv.style.left = `${annotation.x * scale}px`;
       annotationDiv.style.top = `${annotation.y * scale}px`;
@@ -350,7 +352,8 @@ export default {
           page.scrollIntoView({behavior});
         }
       } else if (props.args.scroll_to_annotation) {
-        const annotation = document.querySelector(`[id^="annotation-"][data-index="${props.args.scroll_to_annotation}"]`);
+        // Public API is 1-based; data-position is 0-based.
+        const annotation = document.querySelector(`[id^="annotation-"][data-position="${props.args.scroll_to_annotation - 1}"]`);
         if (annotation) {
           annotation.scrollIntoView({behavior, block: "center"});
         }
