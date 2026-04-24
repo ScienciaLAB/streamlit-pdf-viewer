@@ -50,6 +50,17 @@ Here are some caveats to be aware of:
     - If you need to use all the available space and limit the height, you can encapsulate the `pdf_viewer()` into a
       `st.component(width:...)` setting the width.
 - The `legacy` rendering has been removed from version 0.1.x+
+
+## Streamlit compatibility
+
+Streamlit ≥ 1.41 has a regression in custom-component iframe handling that can reset the page
+scroll position after an `st.dialog` is closed — see issue
+[#107](https://github.com/lfoppiano/streamlit-pdf-viewer/issues/107) for details and the bisect
+data. The last fully working Streamlit version in our testing is 1.40.2.
+
+If this regression affects your app, pin `streamlit<1.41` in your requirements. A runtime
+`UserWarning` is emitted at import time whenever a newer Streamlit is detected.
+
 ## Getting started
 
 ```sh
