@@ -53,13 +53,14 @@ Here are some caveats to be aware of:
 
 ## Streamlit compatibility
 
-Streamlit ≥ 1.41 has a regression in custom-component iframe handling that can reset the page
-scroll position after an `st.dialog` is closed — see issue
+Streamlit **1.41–1.58** have a regression in custom-component iframe handling that resets the
+page scroll position after an `st.dialog` is closed — see issue
 [#107](https://github.com/lfoppiano/streamlit-pdf-viewer/issues/107) for details and the bisect
-data. The last fully working Streamlit version in our testing is 1.40.2.
+data. This was **fixed upstream in Streamlit 1.59.0**.
 
-If this regression affects your app, pin `streamlit<1.41` in your requirements. A runtime
-`UserWarning` is emitted at import time whenever a newer Streamlit is detected.
+Recommended: use **Streamlit ≥ 1.59.0** (verified against the full test suite). Streamlit ≤ 1.40.2
+also works. Avoid the 1.41–1.58 range; a runtime `UserWarning` is emitted at import time when an
+affected version is detected.
 
 ## Getting started
 

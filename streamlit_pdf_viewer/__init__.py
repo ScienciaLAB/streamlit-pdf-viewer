@@ -6,21 +6,22 @@ from typing import Union, List, Optional, Callable, Dict
 import streamlit.components.v1 as components
 import json
 
-# Streamlit >= 1.41 introduced a regression in custom-component iframe handling
-# that resets the page scroll position after an st.dialog is closed (see
-# https://github.com/lfoppiano/streamlit-pdf-viewer/issues/107). Surface this to
-# users at import time so it's visible without reading release notes.
+# Streamlit 1.41-1.58 have a regression in custom-component iframe handling that
+# resets the page scroll position after an st.dialog is closed (see
+# https://github.com/lfoppiano/streamlit-pdf-viewer/issues/107). It was fixed
+# upstream in Streamlit 1.59.0. Surface the affected range to users at import time
+# so it's visible without reading release notes.
 try:
     import warnings as _warnings
     import streamlit as _st
     from packaging.version import Version as _V
 
-    if _V(_st.__version__) >= _V("1.41.0"):
+    if _V("1.41.0") <= _V(_st.__version__) < _V("1.59.0"):
         _warnings.warn(
-            "streamlit-pdf-viewer: Streamlit >= 1.41 has a known regression "
+            "streamlit-pdf-viewer: Streamlit 1.41-1.58 have a known regression "
             "that may reset the page scroll after an st.dialog is closed. "
             "See https://github.com/lfoppiano/streamlit-pdf-viewer/issues/107 . "
-            "Pin streamlit<1.41 if this affects your app.",
+            "Upgrade to streamlit>=1.59 (fixed) or pin streamlit<=1.40.2.",
             UserWarning,
             stacklevel=2,
         )
