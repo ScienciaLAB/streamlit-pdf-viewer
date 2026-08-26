@@ -240,6 +240,6 @@ git push --tags
 ## Acknowledgement
 
 The project was initiated by [Luca Foppiano](https://github.com/lfoppiano) at the [National Institute for Materials Science](https://www.nims.go.jp) (NIMS) in Japan.
-Currently, the development is possible thanks to [ScienciLAB](https://www.sciencialab.com).
+Currently, the development is possible thanks to [ScienciaLAB](https://www.sciencialab.com).
 
 Main contacts: Luca Foppiano and [Tomoya Mato](https://github.com/t29mato). 
